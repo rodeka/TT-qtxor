@@ -68,6 +68,15 @@ void Worker::process()
             for(qint64 i = 0; i < chunks; ++i){
                 dataPtr[i] = swapEndian(swapEndian(dataPtr[i] ^ m_key));
             }
+
+            char *tail = buffer.data() + (chunks * 8);
+            qint8 remaining = readBytes % 8;
+            const char *keyBytes = reinterpret_cast<const char*>(&m_key);
+
+            for(qint8 i = 0; i < remaining; ++i){
+                tail[i] ^= keyBytes[i];
+            }
+
             outFile.write(buffer.constData(), readBytes);
             processedBytes += readBytes;
             emit progress(processedBytes, totalBytes);
